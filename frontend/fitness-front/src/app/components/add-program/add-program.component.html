@@ -1,0 +1,197 @@
+<!-- Modal Overlay -->
+<div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+  
+  <!-- Modal Container -->
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2>➕ Yeni Program Ekle</h2>
+      <button class="close-btn" (click)="closeModal()">✕</button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="modal-content">
+      
+      <!-- Error Message -->
+      <div *ngIf="submitError" class="error-message">
+        ❌ {{ submitError }}
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="programForm" (ngSubmit)="onSubmit()" class="program-form">
+        
+        <!-- Başlık -->
+        <div class="form-group">
+          <label class="form-label">📝 Program Başlığı *</label>
+          <input 
+            type="text" 
+            formControlName="title" 
+            class="form-input"
+            [class.error]="hasError('title')"
+            placeholder="Örn: 5/3/1 Beginner Program"
+          >
+          <div *ngIf="hasError('title')" class="error-text">
+            {{ getErrorMessage('title') }}
+          </div>
+        </div>
+
+        <!-- Açıklama -->
+        <div class="form-group">
+          <label class="form-label">📄 Program Açıklaması *</label>
+          <textarea 
+            formControlName="description" 
+            class="form-textarea"
+            [class.error]="hasError('description')"
+            placeholder="Programın detaylı açıklamasını yazın..."
+            rows="4"
+          ></textarea>
+          <div *ngIf="hasError('description')" class="error-text">
+            {{ getErrorMessage('description') }}
+          </div>
+        </div>
+
+        <!-- Grid - 3 kolonlu -->
+        <div class="form-grid">
+          
+          <!-- Ekipman -->
+          <div class="form-group">
+            <label class="form-label">⚡ Ekipman *</label>
+            <select 
+              formControlName="equipment" 
+              class="form-select"
+              [class.error]="hasError('equipment')"
+            >
+              <option value="">Seçiniz...</option>
+              <option *ngFor="let option of equipmentOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+            <div *ngIf="hasError('equipment')" class="error-text">
+              {{ getErrorMessage('equipment') }}
+            </div>
+          </div>
+
+          <!-- Seviye -->
+          <div class="form-group">
+            <label class="form-label">🎯 Seviye *</label>
+            <select 
+              formControlName="level" 
+              class="form-select"
+              [class.error]="hasError('level')"
+            >
+              <option value="">Seçiniz...</option>
+              <option *ngFor="let option of levelOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+            <div *ngIf="hasError('level')" class="error-text">
+              {{ getErrorMessage('level') }}
+            </div>
+          </div>
+
+          <!-- Hedef -->
+          <div class="form-group">
+            <label class="form-label">🏆 Hedef *</label>
+            <select 
+              formControlName="goal" 
+              class="form-select"
+              [class.error]="hasError('goal')"
+            >
+              <option value="">Seçiniz...</option>
+              <option *ngFor="let option of goalOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+            <div *ngIf="hasError('goal')" class="error-text">
+              {{ getErrorMessage('goal') }}
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Grid - 3 kolonlu (Sayısal değerler) -->
+        <div class="form-grid">
+          
+          <!-- Program Süresi -->
+          <div class="form-group">
+            <label class="form-label">📅 Program Süresi (hafta) *</label>
+            <input 
+              type="number" 
+              formControlName="programLength" 
+              class="form-input"
+              [class.error]="hasError('programLength')"
+              placeholder="8"
+              min="1"
+              max="52"
+            >
+            <div *ngIf="hasError('programLength')" class="error-text">
+              {{ getErrorMessage('programLength') }}
+            </div>
+          </div>
+
+          <!-- Antrenman Süresi -->
+          <div class="form-group">
+            <label class="form-label">⏰ Antrenman Süresi (dk) *</label>
+            <input 
+              type="number" 
+              formControlName="timePerWorkout" 
+              class="form-input"
+              [class.error]="hasError('timePerWorkout')"
+              placeholder="60"
+              min="5"
+              max="300"
+            >
+            <div *ngIf="hasError('timePerWorkout')" class="error-text">
+              {{ getErrorMessage('timePerWorkout') }}
+            </div>
+          </div>
+
+          <!-- Toplam Egzersiz -->
+          <div class="form-group">
+            <label class="form-label">💪 Toplam Egzersiz *</label>
+            <input 
+              type="number" 
+              formControlName="totalExercises" 
+              class="form-input"
+              [class.error]="hasError('totalExercises')"
+              placeholder="24"
+              min="1"
+              max="50"
+            >
+            <div *ngIf="hasError('totalExercises')" class="error-text">
+              {{ getErrorMessage('totalExercises') }}
+            </div>
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button 
+        type="button" 
+        class="btn btn-secondary" 
+        (click)="closeModal()"
+        [disabled]="isSubmitting"
+      >
+        ❌ İptal
+      </button>
+      
+      <button 
+        type="submit" 
+        class="btn btn-primary" 
+        (click)="onSubmit()"
+        [disabled]="isSubmitting || programForm.invalid"
+      >
+        <span *ngIf="!isSubmitting">✅ Program Ekle</span>
+        <span *ngIf="isSubmitting">⏳ Ekleniyor...</span>
+      </button>
+    </div>
+
+  </div>
+
+</div>

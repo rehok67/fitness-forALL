@@ -1,0 +1,144 @@
+<div class="program-list-container">
+  
+  <!-- Header with Add Button and Auth -->
+  <div class="page-header">
+    <h2>🏋️ Fitness Programları</h2>
+    <div class="header-actions">
+      
+      <!-- ADD PROGRAM BUTTON - SADECE AUTHENTICATED USER'LAR İÇİN -->
+      <button 
+        *ngIf="isAuthenticated$ | async"
+        class="add-program-btn" 
+        (click)="openAddProgramModal()"
+        [disabled]="loading"
+        title="Yeni program oluştur"
+      >
+        ➕ Yeni Program Ekle
+      </button>
+      
+      <!-- AUTHENTICATED USER MENU -->
+      <div class="auth-section" *ngIf="isAuthenticated$ | async; else guestButtons">
+        <div class="user-menu">
+          <div class="user-info" *ngIf="currentUser$ | async as user">
+            <span class="user-avatar">👤</span>
+            <div class="user-details">
+              <span class="username">{{ user.username }}</span>
+              <span class="user-email">{{ user.email }}</span>
+            </div>
+          </div>
+          
+          <div class="user-actions">
+            <button class="user-btn profile-btn" title="Profil">
+              ⚙️ Profil
+            </button>
+            <button class="user-btn logout-btn" (click)="logout()" title="Çıkış Yap">
+              🚪 Çıkış
+            </button>
+            <!-- DEBUG BUTTON - Production'da kaldırılacak -->
+            <button class="user-btn debug-btn" (click)="clearAuthState()" title="Auth Temizle (Debug)">
+              🧹 Debug Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GUEST BUTTONS TEMPLATE -->
+      <ng-template #guestButtons>
+        <div class="auth-buttons">
+          <a routerLink="/auth/login" class="auth-btn login-btn">
+            🔑 Giriş Yap
+          </a>
+          <a routerLink="/auth/register" class="auth-btn register-btn">
+            📝 Kayıt Ol
+          </a>
+        </div>
+      </ng-template>
+      
+    </div>
+  </div>
+  
+  <!-- Search Filter Component -->
+  <app-search-filter 
+    (filterChange)="onFilterChange($event)"
+    (clearFilters)="onClearFilters()"
+  ></app-search-filter>
+  
+  <!-- Loading durumu -->
+  <div *ngIf="loading" class="status-message loading">
+    <span *ngIf="isFiltering">🔍 Programlar filtreleniyor...</span>
+    <span *ngIf="!isFiltering">⏳ Programlar yükleniyor...</span>
+  </div>
+  
+  <!-- Error durumu -->
+  <div *ngIf="error" class="status-message error">
+    ❌ {{ error }}
+    <button (click)="loadPrograms()" class="retry-btn">🔄 Tekrar Dene</button>
+  </div>
+  
+  <!-- Program listesi -->
+  <div *ngIf="!loading && !error" class="programs-grid">
+    <div 
+      *ngFor="let program of programs; trackBy: trackByProgramId" 
+      class="program-card"
+      (click)="onProgramClick(program)"
+    >
+      <!-- Program başlığı -->
+      <h3 class="program-title">{{ program.title }}</h3>
+      
+      <!-- Program bilgileri -->
+      <div class="program-info">
+        <div class="info-item">
+          <span class="label">⚡ Ekipman:</span>
+          <span class="value">{{ program.equipment }}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="label">⏰ Süre:</span>
+          <span class="value">{{ program.timePerWorkout }} dakika</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="label">📅 Program:</span>
+          <span class="value">{{ program.programLength }} hafta</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="label">🎯 Seviye:</span>
+          <span class="value">{{ program.levels.join(', ') }}</span>
+        </div>
+      </div>
+      
+      <!-- Açıklama (kısaltılmış) -->
+      <p class="program-description">
+        {{ program.description.substring(0, 100) }}...
+      </p>
+      
+      <!-- Click indicator -->
+      <div class="click-indicator">
+        👆 Detaylar için tıkla
+      </div>
+    </div>
+  </div>
+  
+  <!-- Program sayısı ve filtreleme durumu -->
+  <div *ngIf="programs.length > 0" class="programs-count">
+    <span *ngIf="!isFiltering">📊 Toplam {{ programs.length }} program bulundu</span>
+    <span *ngIf="isFiltering">🎯 {{ programs.length }} program filtreleme sonucu bulundu</span>
+  </div>
+  
+  <!-- Filtreleme sonucu boş -->
+  <div *ngIf="programs.length === 0 && !loading && !error && isFiltering" class="no-results">
+    <div class="no-results-content">
+      <div class="no-results-icon">🔍</div>
+      <h3>Aradığınız kriterlere uygun program bulunamadı</h3>
+      <p>Filtreleri gevşeterek tekrar deneyin veya tüm programları görüntüleyin.</p>
+    </div>
+  </div>
+
+  <!-- Add Program Component (Modal) - SADECE AUTHENTICATED USER'LAR İÇİN -->
+  <app-add-program 
+    *ngIf="isAuthenticated$ | async"
+    (programAdded)="onProgramAdded()"
+  ></app-add-program>
+
+</div> 

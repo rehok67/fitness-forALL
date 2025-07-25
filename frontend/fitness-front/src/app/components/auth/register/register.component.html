@@ -1,0 +1,221 @@
+<div class="register-container">
+
+  <!-- FORM STATE -->
+  <div *ngIf="registrationState === 'form'" class="register-form-container">
+    
+    <!-- Header -->
+    <div class="register-header">
+      <h1>📝 Hesap Oluştur</h1>
+      <p>Fitness Program Hub'a katılın</p>
+    </div>
+
+    <!-- Registration Form -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      
+      <!-- Error Message -->
+      <div *ngIf="submitError" class="error-message">
+        ❌ {{ submitError }}
+      </div>
+
+      <!-- Username -->
+      <div class="form-group">
+        <label class="form-label">👤 Kullanıcı Adı *</label>
+        <input 
+          type="text" 
+          formControlName="username" 
+          class="form-input"
+          [class.error]="hasError('username')"
+          placeholder="Örn: john_doe"
+          autocomplete="username"
+        >
+        <div *ngIf="hasError('username')" class="error-text">
+          {{ getErrorMessage('username') }}
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="form-label">📧 Email Adresi *</label>
+        <input 
+          type="email" 
+          formControlName="email" 
+          class="form-input"
+          [class.error]="hasError('email')"
+          placeholder="Örn: john@example.com"
+          autocomplete="email"
+        >
+        <div *ngIf="hasError('email')" class="error-text">
+          {{ getErrorMessage('email') }}
+        </div>
+      </div>
+
+      <!-- First Name & Last Name -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">👨 Ad</label>
+          <input 
+            type="text" 
+            formControlName="firstName" 
+            class="form-input"
+            [class.error]="hasError('firstName')"
+            placeholder="Adınız"
+            autocomplete="given-name"
+          >
+          <div *ngIf="hasError('firstName')" class="error-text">
+            {{ getErrorMessage('firstName') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">👤 Soyad</label>
+          <input 
+            type="text" 
+            formControlName="lastName" 
+            class="form-input"
+            [class.error]="hasError('lastName')"
+            placeholder="Soyadınız"
+            autocomplete="family-name"
+          >
+          <div *ngIf="hasError('lastName')" class="error-text">
+            {{ getErrorMessage('lastName') }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label class="form-label">🔒 Şifre *</label>
+        <input 
+          type="password" 
+          formControlName="password" 
+          class="form-input"
+          [class.error]="hasError('password')"
+          placeholder="En az 6 karakter"
+          autocomplete="new-password"
+        >
+        <div *ngIf="hasError('password')" class="error-text">
+          {{ getErrorMessage('password') }}
+        </div>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="form-group">
+        <label class="form-label">🔒 Şifre Tekrarı *</label>
+        <input 
+          type="password" 
+          formControlName="confirmPassword" 
+          class="form-input"
+          [class.error]="hasError('confirmPassword') || hasPasswordMismatch()"
+          placeholder="Şifrenizi tekrar girin"
+          autocomplete="new-password"
+        >
+        <div *ngIf="hasError('confirmPassword')" class="error-text">
+          {{ getErrorMessage('confirmPassword') }}
+        </div>
+        <div *ngIf="hasPasswordMismatch()" class="error-text">
+          Şifreler eşleşmiyor
+        </div>
+      </div>
+
+      <!-- Terms & Conditions -->
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            formControlName="terms"
+            class="checkbox-input"
+          >
+          <span class="checkbox-custom"></span>
+          <span class="checkbox-text">
+            <strong>Kullanım Koşulları</strong>'nı ve <strong>Gizlilik Politikası</strong>'nı okudum ve kabul ediyorum *
+          </span>
+        </label>
+        <div *ngIf="hasError('terms')" class="error-text">
+          {{ getErrorMessage('terms') }}
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button 
+        type="submit" 
+        class="submit-btn"
+        [disabled]="isSubmitting || registerForm.invalid"
+        [class.loading]="isSubmitting"
+      >
+        <span *ngIf="!isSubmitting">📝 Hesap Oluştur</span>
+        <span *ngIf="isSubmitting">⏳ Oluşturuluyor...</span>
+      </button>
+
+      <!-- Login Link -->
+      <div class="form-footer">
+        <p>Zaten hesabınız var mı?</p>
+        <a routerLink="/auth/login" class="login-link">🔑 Giriş Yap</a>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div *ngIf="registrationState === 'success'" class="success-container">
+    
+    <!-- Success Header -->
+    <div class="success-header">
+      <div class="success-icon">✅</div>
+      <h1>Hesap Başarıyla Oluşturuldu!</h1>
+      <p>Email doğrulama linki gönderildi</p>
+    </div>
+
+    <!-- Success Content -->
+    <div class="success-content">
+      
+      <div class="email-info">
+        <h3>📧 {{ registeredEmail }}</h3>
+        <p>Bu email adresine doğrulama linki gönderdik.</p>
+      </div>
+
+      <div class="verification-steps">
+        <h3>📋 Sonraki Adımlar:</h3>
+        <ol>
+          <li><strong>Email kutunuzu kontrol edin</strong> (spam klasörü dahil)</li>
+          <li><strong>"✅ Email Adresimi Doğrula"</strong> butonuna tıklayın</li>
+          <li><strong>Email doğrulandıktan sonra</strong> giriş yapabilirsiniz</li>
+        </ol>
+      </div>
+
+      <div class="verification-warning">
+        <h3>⚠️ Önemli Bilgiler:</h3>
+        <ul>
+          <li>Doğrulama linki <strong>24 saat</strong> boyunca geçerlidir</li>
+          <li>Email gelmezse <strong>spam klasörünü</strong> kontrol edin</li>
+          <li>Sorun yaşarsanız yeniden kayıt olmayı deneyin</li>
+        </ul>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="success-actions">
+        <button (click)="goToLogin()" class="primary-btn">
+          🔑 Giriş Sayfasına Git
+        </button>
+        <button (click)="backToForm()" class="secondary-btn">
+          ← Yeni Hesap Oluştur
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="success-footer">
+      <p>
+        <strong>🏋️ Fitness Program Hub</strong><br>
+        Hesap oluşturma tamamlandı
+      </p>
+      <div class="footer-links">
+        <a routerLink="/">Ana Sayfa</a>
+        <span>•</span>
+        <a routerLink="/auth/login">Giriş Yap</a>
+      </div>
+    </div>
+
+  </div>
+
+</div> 

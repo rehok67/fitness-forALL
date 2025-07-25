@@ -1,0 +1,124 @@
+<div class="search-filter-container">
+  
+  <!-- Filter Header -->
+  <div class="filter-header">
+    <h3>🔍 Program Filtrele</h3>
+    <div class="filter-actions">
+      <span class="active-filters" *ngIf="getActiveFilterCount() > 0">
+        {{ getActiveFilterCount() }} filtre aktif
+      </span>
+      <button 
+        (click)="onClearFilters()" 
+        class="clear-btn"
+        *ngIf="getActiveFilterCount() > 0"
+      >
+        🧹 Temizle
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Controls -->
+  <div class="filter-controls">
+    
+    <!-- Equipment Filter -->
+    <div class="filter-group">
+      <label class="filter-label">⚡ Ekipman</label>
+      <select 
+        [(ngModel)]="searchParams.equipment" 
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option *ngFor="let option of equipmentOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Level Filter -->
+    <div class="filter-group">
+      <label class="filter-label">🎯 Seviye</label>
+      <select 
+        [(ngModel)]="searchParams.level" 
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option *ngFor="let option of levelOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Goal Filter -->
+    <div class="filter-group">
+      <label class="filter-label">🏆 Hedef</label>
+      <select 
+        [(ngModel)]="searchParams.goal" 
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option *ngFor="let option of goalOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Max Duration Filter -->
+    <div class="filter-group">
+      <label class="filter-label">⏰ Max Süre (dakika)</label>
+      <div class="duration-input-group">
+        <input 
+          type="number" 
+          [(ngModel)]="searchParams.maxDuration"
+          (input)="onFilterChange()"
+          class="duration-input"
+          placeholder="Örn: 60"
+          min="0"
+          max="300"
+        >
+        <span class="input-suffix">dk</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick Filter Buttons -->
+  <div class="quick-filters">
+    <h4>🚀 Hızlı Filtreler</h4>
+    <div class="quick-filter-buttons">
+      
+      <button 
+        (click)="setQuickFilter('equipment', 'At Home')" 
+        class="quick-filter-btn"
+        [class.active]="searchParams.equipment === 'At Home'"
+      >
+        🏠 Evde
+      </button>
+      
+      <button 
+        (click)="setQuickFilter('equipment', 'Full Gym')" 
+        class="quick-filter-btn"
+        [class.active]="searchParams.equipment === 'Full Gym'"
+      >
+        🏋️ Spor Salonu
+      </button>
+      
+      <button 
+        (click)="setQuickFilter('level', 'Beginner')" 
+        class="quick-filter-btn"
+        [class.active]="searchParams.level === 'Beginner'"
+      >
+        👶 Başlangıç
+      </button>
+      
+      <button 
+        (click)="setQuickFilter('goal', 'Bodybuilding')" 
+        class="quick-filter-btn"
+        [class.active]="searchParams.goal === 'Bodybuilding'"
+      >
+        💪 Vücut Geliştirme
+      </button>
+      
+    </div>
+  </div>
+
+</div>

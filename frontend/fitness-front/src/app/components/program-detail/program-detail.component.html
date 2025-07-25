@@ -1,0 +1,113 @@
+<div class="program-detail-container">
+  
+  <!-- Header with back button -->
+  <div class="detail-header">
+    <button (click)="goBack()" class="back-btn">
+      ⬅️ Geri Dön
+    </button>
+    <h1>Program Detayı</h1>
+  </div>
+
+  <!-- Loading durumu -->
+  <div *ngIf="loading" class="status-message loading">
+    ⏳ Program detayı yükleniyor...
+  </div>
+
+  <!-- Error durumu -->
+  <div *ngIf="error" class="status-message error">
+    ❌ {{ error }}
+    <button *ngIf="programId" (click)="loadProgramDetail(programId)" class="retry-btn">
+      🔄 Tekrar Dene
+    </button>
+  </div>
+
+  <!-- Program detayı -->
+  <div *ngIf="program && !loading && !error" class="program-detail">
+    
+    <!-- Program başlığı -->
+    <div class="program-header">
+      <h2 class="program-title">{{ program.title }}</h2>
+      <div class="program-actions">
+        <button (click)="editProgram()" class="edit-btn">
+          ✏️ Düzenle
+        </button>
+      </div>
+    </div>
+
+    <!-- Program bilgileri grid -->
+    <div class="program-info-grid">
+      <div class="info-card">
+        <div class="info-icon">⚡</div>
+        <div class="info-content">
+          <span class="info-label">Ekipman</span>
+          <span class="info-value">{{ program.equipment }}</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">⏰</div>
+        <div class="info-content">
+          <span class="info-label">Antrenman Süresi</span>
+          <span class="info-value">{{ program.timePerWorkout }} dakika</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">📅</div>
+        <div class="info-content">
+          <span class="info-label">Program Süresi</span>
+          <span class="info-value">{{ program.programLength }} hafta</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">🏋️</div>
+        <div class="info-content">
+          <span class="info-label">Toplam Egzersiz</span>
+          <span class="info-value">{{ program.totalExercises }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seviye ve hedefler -->
+    <div class="program-tags">
+      <div class="tag-section">
+        <h3>🎯 Seviyeler</h3>
+        <div class="tags">
+          <span *ngFor="let level of program.levels" class="tag level-tag">
+            {{ level }}
+          </span>
+        </div>
+      </div>
+
+      <div class="tag-section">
+        <h3>🏆 Hedefler</h3>
+        <div class="tags">
+          <span *ngFor="let goal of program.goals" class="tag goal-tag">
+            {{ goal }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Program açıklaması -->
+    <div class="program-description">
+      <h3>📝 Program Açıklaması</h3>
+      <div class="description-content">
+        {{ program.description }}
+      </div>
+    </div>
+
+    <!-- Tarih bilgileri -->
+    <div *ngIf="program.createdAt || program.updatedAt" class="program-dates">
+      <div *ngIf="program.createdAt" class="date-info">
+        <strong>Oluşturulma:</strong> {{ program.createdAt | date:'dd/MM/yyyy HH:mm' }}
+      </div>
+      <div *ngIf="program.updatedAt" class="date-info">
+        <strong>Son Güncelleme:</strong> {{ program.updatedAt | date:'dd/MM/yyyy HH:mm' }}
+      </div>
+    </div>
+
+  </div>
+  
+</div>

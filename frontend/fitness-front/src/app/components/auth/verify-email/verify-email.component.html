@@ -1,0 +1,84 @@
+<div class="verify-email-container">
+  
+  <!-- Header -->
+  <div class="verify-header">
+    <h1>📧 Email Doğrulama</h1>
+    <p>Hesabınızı aktifleştirmek için email adresinizi doğruluyoruz</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="verificationStatus === 'loading'" class="verification-content loading">
+    <div class="loading-spinner">⏳</div>
+    <h2>{{ message }}</h2>
+    <p>Lütfen bekleyin...</p>
+  </div>
+
+  <!-- Success State -->
+  <div *ngIf="verificationStatus === 'success'" class="verification-content success">
+    <div class="success-icon">✅</div>
+    <h2>Başarılı!</h2>
+    <p>{{ message }}</p>
+    <div class="success-actions">
+      <button (click)="goToLogin()" class="primary-btn">
+        🔑 Giriş Yap
+      </button>
+      <p class="auto-redirect">3 saniye sonra otomatik olarak giriş sayfasına yönlendirileceksiniz...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="verificationStatus === 'error'" class="verification-content error">
+    <div class="error-icon">❌</div>
+    <h2>Doğrulama Başarısız</h2>
+    <p class="error-message">{{ message }}</p>
+    
+    <div class="error-actions">
+      <button (click)="resendVerification()" class="secondary-btn">
+        📧 Yeni Doğrulama Emaili Gönder
+      </button>
+      <button (click)="goToLogin()" class="primary-btn">
+        🔑 Giriş Sayfasına Git
+      </button>
+    </div>
+    
+    <div class="help-text">
+      <h3>❓ Sorun yaşıyor musunuz?</h3>
+      <ul>
+        <li>Email kutunuzu spam klasörü dahil kontrol edin</li>
+        <li>Link'in süresi dolmuş olabilir (24 saat geçerli)</li>
+        <li>Link'in doğru şekilde kopyalandığından emin olun</li>
+        <li>Yeni doğrulama emaili talep edebilirsiniz</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Invalid Token State -->
+  <div *ngIf="verificationStatus === 'invalid'" class="verification-content invalid">
+    <div class="invalid-icon">⚠️</div>
+    <h2>Geçersiz Link</h2>
+    <p class="invalid-message">{{ message }}</p>
+    
+    <div class="invalid-actions">
+      <button (click)="goToLogin()" class="primary-btn">
+        🔑 Giriş Sayfasına Git
+      </button>
+      <button (click)="goToHome()" class="secondary-btn">
+        🏠 Ana Sayfaya Git
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="verify-footer">
+    <p>
+      <strong>🏋️ Fitness Program Hub</strong><br>
+      Email doğrulama sistemi
+    </p>
+    <div class="footer-links">
+      <a routerLink="/">Ana Sayfa</a>
+      <span>•</span>
+      <a routerLink="/auth/login">Giriş Yap</a>
+    </div>
+  </div>
+
+</div> 

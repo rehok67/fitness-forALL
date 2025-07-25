@@ -1,0 +1,149 @@
+<div class="login-container">
+  
+  <!-- Login Card -->
+  <div class="login-card">
+    
+    <!-- Header -->
+    <div class="login-header">
+      <div class="logo">🏋️</div>
+      <h1>Giriş Yap</h1>
+      <p>Fitness Program Tracker'a hoş geldiniz</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error$ | async as error" class="error-message">
+      ❌ {{ error }}
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      
+      <!-- Email/Username Field -->
+      <div class="form-group">
+        <label class="form-label">📧 Email veya Kullanıcı Adı</label>
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            formControlName="emailOrUsername"
+            class="form-input"
+            [class.error]="hasError('emailOrUsername')"
+            placeholder="email@example.com veya kullanici123"
+            autocomplete="username"
+          >
+          <div class="input-icon">👤</div>
+        </div>
+        <div *ngIf="hasError('emailOrUsername')" class="error-text">
+          {{ getErrorMessage('emailOrUsername') }}
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label class="form-label">🔒 Şifre</label>
+        <div class="input-wrapper">
+          <input 
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            class="form-input"
+            [class.error]="hasError('password')"
+            placeholder="Şifrenizi girin"
+            autocomplete="current-password"
+          >
+          <button 
+            type="button" 
+            class="password-toggle"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'"
+          >
+            {{ showPassword ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <div *ngIf="hasError('password')" class="error-text">
+          {{ getErrorMessage('password') }}
+        </div>
+      </div>
+
+      <!-- Remember Me & Forgot Password -->
+      <div class="form-options">
+        <label class="checkbox-wrapper">
+          <input type="checkbox" formControlName="rememberMe">
+          <span class="checkmark"></span>
+          <span class="checkbox-label">Beni Hatırla</span>
+        </label>
+        
+        <button 
+          type="button" 
+          class="forgot-password-link"
+          (click)="navigateToForgotPassword()"
+        >
+          Şifremi Unuttum
+        </button>
+      </div>
+
+      <!-- Submit Button -->
+      <button 
+        type="submit" 
+        class="login-btn"
+        [disabled]="(loading$ | async) || loginForm.invalid"
+      >
+        <span *ngIf="!(loading$ | async)">🚀 Giriş Yap</span>
+        <span *ngIf="loading$ | async" class="loading-spinner">
+          <div class="spinner"></div>
+          Giriş yapılıyor...
+        </span>
+      </button>
+
+    </form>
+
+    <!-- Divider -->
+    <div class="divider">
+      <span>veya</span>
+    </div>
+
+    <!-- Social Login Buttons -->
+    <div class="social-login">
+      <button 
+        type="button" 
+        class="social-btn google-btn"
+        (click)="loginWithGoogle()"
+        disabled
+      >
+        🔍 Google ile Giriş
+      </button>
+      
+      <button 
+        type="button" 
+        class="social-btn github-btn"
+        (click)="loginWithGithub()"
+        disabled
+      >
+        🐙 GitHub ile Giriş
+      </button>
+    </div>
+
+    <!-- Register Link -->
+    <div class="register-section">
+      <p>Hesabınız yok mu?</p>
+      <button 
+        type="button" 
+        class="register-link"
+        (click)="navigateToRegister()"
+      >
+        🆕 Hesap Oluşturun
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Background Info -->
+  <div class="background-info">
+    <h2>💪 Fitness Journey'nize Devam Edin</h2>
+    <ul>
+      <li>✅ 2500+ fitness programına erişim</li>
+      <li>✅ Kişisel program oluşturma</li>
+      <li>✅ İlerleme takibi</li>
+      <li>✅ Topluluk desteği</li>
+    </ul>
+  </div>
+
+</div>
