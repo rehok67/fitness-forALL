@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Select } from 'primeng/select';
 import { ProgramSearchParams } from '../../models/program.model';
 
 @Component({
   selector: 'app-search-filter',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Select],
   templateUrl: './search-filter.component.html',
   styleUrl: './search-filter.component.scss'
 })

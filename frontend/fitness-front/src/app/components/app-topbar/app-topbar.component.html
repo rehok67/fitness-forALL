@@ -1,0 +1,138 @@
+<!-- Sakai tarzı topbar layout -->
+<div class="layout-topbar">
+  <!-- Sol taraf: Logo ve menu toggle -->
+  <div class="layout-topbar-logo-container">
+    <button 
+      class="layout-menu-button layout-topbar-action" 
+      (click)="toggleMenu()"
+      type="button"
+      aria-label="Menu Toggle">
+      <i class="pi pi-bars"></i>
+    </button>
+    
+    <a class="layout-topbar-logo" (click)="goHome()" role="button">
+      <!-- Gerçek logo dosyası -->
+      <img src="/assets/logo.png" alt="Fitness Logo" class="logo-image" />
+      <span>FITNESS TRACKER</span>
+    </a>
+  </div>
+
+  <!-- Sağ taraf: Actions -->
+  <div class="layout-topbar-actions">
+    <!-- Dark mode toggle -->
+    <button 
+      type="button" 
+      class="layout-topbar-action"
+      (click)="toggleDarkMode()"
+      [attr.aria-label]="isDarkMode() ? 'Light Mode' : 'Dark Mode'">
+      <i [class]="isDarkMode() ? 'pi pi-moon' : 'pi pi-sun'"></i>
+    </button>
+
+    <!-- Theme palette -->
+    <div class="relative theme-selector">
+      <button 
+        type="button"
+        class="layout-topbar-action layout-topbar-action-highlight"
+        (click)="toggleThemePanel()"
+        aria-label="Theme Selector">
+        <i class="pi pi-palette"></i>
+      </button>
+      
+      <!-- Theme configurator panel -->
+      <div class="theme-panel" [class.hidden]="!showThemePanel()">
+        <div class="flex flex-col gap-4">
+          <!-- Primary Colors -->
+          <div>
+            <span class="text-sm text-muted-color font-semibold">Ana Renk</span>
+            <div class="pt-2 flex gap-2 flex-wrap justify-start">
+              <button 
+                *ngFor="let color of ['emerald', 'green', 'lime', 'orange', 'amber', 'yellow', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']"
+                type="button" 
+                class="color-button"
+                [class.active]="currentTheme() === color"
+                [style.background-color]="'var(--' + color + '-500)'"
+                [title]="color"
+                (click)="changeTheme(color)">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop menu -->
+    <div class="layout-topbar-menu">
+      <div class="layout-topbar-menu-content">
+        <!-- Auth buttons -->
+        <p-button 
+          label="Giriş Yap" 
+          icon="pi pi-key" 
+          [text]="true" 
+          [rounded]="true"
+          (onClick)="goLogin()"
+          styleClass="auth-button">
+        </p-button>
+        <p-button 
+          label="Kayıt Ol" 
+          icon="pi pi-user-plus" 
+          severity="secondary" 
+          [outlined]="true" 
+          [rounded]="true"
+          (onClick)="goRegister()"
+          styleClass="auth-button">
+        </p-button>
+        
+        <!-- Menu items -->
+        <button 
+          *ngFor="let item of topbarMenuItems()"
+          type="button" 
+          class="layout-topbar-action"
+          (click)="executeMenuCommand(item)"
+          [title]="item.label">
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+          <p-badge 
+            *ngIf="item.badge" 
+            [value]="item.badge" 
+            severity="danger"
+            size="small">
+          </p-badge>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu button -->
+    <div class="mobile-menu-container">
+      <!-- Mobile auth buttons -->
+      <div class="mobile-auth-buttons">
+        <p-button 
+          icon="pi pi-key" 
+          [text]="true" 
+          [rounded]="true"
+          size="small"
+          (onClick)="goLogin()"
+          pTooltip="Giriş Yap"
+          tooltipPosition="bottom">
+        </p-button>
+        <p-button 
+          icon="pi pi-user-plus" 
+          severity="secondary" 
+          [outlined]="true" 
+          [rounded]="true"
+          size="small"
+          (onClick)="goRegister()"
+          pTooltip="Kayıt Ol"
+          tooltipPosition="bottom">
+        </p-button>
+      </div>
+      
+      <button 
+        type="button"
+        class="layout-topbar-menu-button mobile-only"
+        (click)="toggleMobileMenu()"
+        aria-label="Mobile Menu">
+        <i class="pi pi-ellipsis-v"></i>
+      </button>
+    </div>
+  </div>
+</div>

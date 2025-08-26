@@ -1,22 +1,26 @@
-import { Component, EventEmitter, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Output, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ProgramService } from '../../services/program.service';
-import { CreateProgramRequest } from '../../models/program.model';
+import { CreateProgramRequest, Program } from '../../models/program.model';
 
 @Component({
   selector: 'app-add-program',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './add-program.component.html',
   styleUrl: './add-program.component.scss'
 })
-export class AddProgramComponent {
+export class AddProgramComponent implements OnInit {
   
   // Form ve state
-  programForm: FormGroup;
+  programForm!: FormGroup;
   isSubmitting = false;
   submitError = '';
-  showModal = false;
+  isEditMode = false;
+  programId: number | null = null;
+  existingProgram: Program | null = null;
 
   // Output events
   @Output() programAdded = new EventEmitter<void>();
@@ -25,10 +29,95 @@ export class AddProgramComponent {
   // Services
   private fb = inject(FormBuilder);
   private programService = inject(ProgramService);
+  public route = inject(ActivatedRoute);
+  public router = inject(Router);
 
   constructor() {
-    console.log('📝 AddProgramComponent oluşturuldu');
     this.programForm = this.createForm();
+    console.log('📝 AddProgramComponent oluşturuldu');
+    console.log('🌐 Mevcut URL:', window.location.href);
+    console.log('📍 Constructor - isEditMode:', this.isEditMode);
+  }
+
+  ngOnInit(): void {
+    console.log('🚀 AddProgramComponent ngOnInit - Route params kontrol ediliyor');
+    
+    // URL'den ID parametresini kontrol et
+    this.route.params.subscribe(params => {
+      console.log('📍 Route params:', params);
+      const id = Number(params['id']);
+      
+      if (id && !isNaN(id)) {
+        this.isEditMode = true;
+        this.programId = id;
+        console.log('✏️ Düzenleme modu aktifleştirildi. Program ID:', this.programId);
+        this.loadExistingProgram(id);
+      } else {
+        this.isEditMode = false;
+        console.log('➕ Yeni program modu');
+      }
+    });
+    
+    console.log('🧑‍💼 Program Added Component - OnInit tamamlandı');
+  }
+
+  // Mevcut programı yükle (düzenleme modu için)
+  loadExistingProgram(id: number): void {
+    console.log('📡 Program bilgileri yükleniyor. ID:', id);
+    
+    this.programService.getProgramById(id).subscribe({
+      next: (program: Program) => {
+        console.log('✅ Program bilgileri alındı:', program);
+        this.existingProgram = program;
+        this.populateForm(program);
+        console.log('✅ Program bilgileri form\'a yüklendi:', program.title);
+      },
+      error: (error) => {
+        console.error('❌ Program bilgileri yüklenirken hata:', error);
+        this.submitError = 'Program bilgileri yüklenemedi';
+        // Ana sayfaya yönlendir
+        setTimeout(() => this.router.navigate(['/']), 3000);
+      }
+    });
+  }
+
+  // Formu mevcut program verisiyle doldur
+  populateForm(program: Program): void {
+    console.log('🔧 Form doldurulacak veriler:', program);
+    
+    // Backend'den gelen levels ve goals clean et
+    let cleanLevel = '';
+    let cleanGoal = '';
+    
+    if (program.levels && program.levels.length > 0) {
+      // '{Novice' -> 'Novice' şeklinde temizle
+      cleanLevel = program.levels[0].replace(/[{}]/g, '').trim();
+      console.log('🧹 Temizlenmiş level:', cleanLevel);
+    }
+    
+    if (program.goals && program.goals.length > 0) {
+      // '{Bodybuilding}' -> 'Bodybuilding' şeklinde temizle  
+      cleanGoal = program.goals[0].replace(/[{}]/g, '').trim();
+      console.log('🧹 Temizlenmiş goal:', cleanGoal);
+    }
+    
+    const formData = {
+      title: program.title || '',
+      description: program.description || '',
+      equipment: program.equipment || '',
+      level: cleanLevel,
+      goal: cleanGoal,
+      programLength: program.programLength || 0,
+      sessionsPerWeek: 3, // Default değer (backend'de olmadığı için)
+      sessionDuration: program.timePerWorkout || 0,
+      totalExercises: program.totalExercises || 0
+    };
+    
+    console.log('📝 Form\'a gönderilecek veriler:', formData);
+    this.programForm.patchValue(formData);
+    
+    // Form değerlerini logla
+    console.log('✅ Form güncel değerleri:', this.programForm.value);
   }
 
   // Reactive Form oluştur
@@ -49,18 +138,15 @@ export class AddProgramComponent {
       goal: ['', [Validators.required]],
       programLength: ['', [
         Validators.required,
-        Validators.min(1),
-        Validators.max(52)
+  Validators.min(1)
       ]],
       timePerWorkout: ['', [
         Validators.required,
-        Validators.min(5),
-        Validators.max(300)
+  Validators.min(1)
       ]],
       totalExercises: ['', [
         Validators.required,
-        Validators.min(1),
-        Validators.max(50)
+  Validators.min(1)
       ]]
     });
   }
@@ -93,17 +179,27 @@ export class AddProgramComponent {
 
   // Modal aç
   openModal(): void {
-    this.showModal = true;
-    this.programForm.reset();
+    // Reset with safe defaults to avoid invalid empty state visuals
+    this.programForm.reset({
+      title: '',
+      description: '',
+      equipment: '',
+      level: '',
+      goal: '',
+      programLength: 1,
+      timePerWorkout: 1,
+      totalExercises: 1
+    });
     this.submitError = '';
     console.log('📝 Modal açıldı');
   }
 
   // Modal kapat
   closeModal(): void {
-    this.showModal = false;
-    this.modalClosed.emit();
-    console.log('❌ Modal kapatıldı');
+  this.modalClosed.emit();
+  console.log('❌ Modal kapatıldı');
+  // Sayfa olarak kullanıldığında ana listeye dön
+  this.router.navigate(['/']);
   }
 
   // Form submit
@@ -131,8 +227,17 @@ export class AddProgramComponent {
       totalExercises: Number(formData.totalExercises)
     };
 
-    console.log('📡 Program ekleniyor:', programData);
+    if (this.isEditMode && this.programId) {
+      console.log('📡 Program güncelleniyor:', programData);
+      this.updateProgram(programData);
+    } else {
+      console.log('📡 Program ekleniyor:', programData);
+      this.createProgram(programData);
+    }
+  }
 
+  // Yeni program oluştur
+  createProgram(programData: CreateProgramRequest): void {
     this.programService.createProgram(programData).subscribe({
       next: (newProgram) => {
         console.log('✅ Program başarıyla eklendi:', newProgram);
@@ -143,6 +248,28 @@ export class AddProgramComponent {
       error: (error) => {
         console.error('❌ Program ekleme hatası:', error);
         this.submitError = 'Program eklenirken hata oluştu. Lütfen tekrar deneyin.';
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  // Mevcut programı güncelle
+  updateProgram(programData: CreateProgramRequest): void {
+    if (!this.programId) return;
+
+    console.log('✏️ Program güncelleniyor:', this.programId, programData);
+    
+    this.programService.updateProgram(this.programId, programData).subscribe({
+      next: (updatedProgram: Program) => {
+        console.log('✅ Program başarıyla güncellendi:', updatedProgram);
+        this.isSubmitting = false;
+        
+        // Program detay sayfasına geri dön
+        this.router.navigate(['/program', this.programId]);
+      },
+      error: (error) => {
+        console.error('❌ Program güncelleme hatası:', error);
+        this.submitError = 'Program güncellenirken hata oluştu. Lütfen tekrar deneyin.';
         this.isSubmitting = false;
       }
     });

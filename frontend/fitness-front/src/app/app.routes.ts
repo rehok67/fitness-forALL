@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ProgramListComponent } from './components/program-list/program-list.component';
-import { authGuard, guestGuard } from './guards/auth.guard';
+import { authGuard, guestGuard, adminGuard } from './guards/auth.guard';
+import { AddProgramComponent } from './components/add-program/add-program.component';
 
 export const routes: Routes = [
   // ============================================================================
@@ -11,12 +12,25 @@ export const routes: Routes = [
     component: ProgramListComponent,
     title: 'Fitness Programları'
   },
+  // Create Program (as a full page) — MUST be before 'program/:id'
+  {
+    path: 'program/create',
+  component: AddProgramComponent,
+  title: 'Yeni Program Oluştur'
+  },
   {
     path: 'program/:id',
     loadComponent: () => import('./components/program-detail/program-detail.component')
       .then(m => m.ProgramDetailComponent),
     title: 'Program Detayı'
   },
+  {
+    path: 'program/:id/weekly-plan',
+    loadComponent: () => import('./components/weekly-plan/weekly-plan.component')
+      .then(m => m.WeeklyPlanComponent),
+    title: 'Haftalık Plan'
+  },
+
 
   // ============================================================================
   // AUTHENTICATION ROUTES (Only for guests - not authenticated users)
@@ -52,6 +66,17 @@ export const routes: Routes = [
   //   title: 'Dashboard',
   //   canActivate: [authGuard]
   // },
+
+  // ============================================================================
+  // ADMIN ROUTES (Admin authentication required)
+  // ============================================================================
+  {
+    path: 'admin/program/edit/:id',
+    loadComponent: () => import('./components/edit-program/edit-program.component')
+      .then(m => m.EditProgramComponent),
+    title: 'Program Düzenle',
+    canActivate: [adminGuard]
+  },
 
   // ============================================================================
   // REDIRECTS & FALLBACKS

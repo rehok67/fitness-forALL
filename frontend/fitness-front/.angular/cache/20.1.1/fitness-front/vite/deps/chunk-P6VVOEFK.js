@@ -1,7 +1,7 @@
 import {
   XhrFactory,
   parseCookieValue
-} from "./chunk-FTJJFYDV.js";
+} from "./chunk-DBQVMHQU.js";
 import {
   APP_BOOTSTRAP_LISTENER,
   ApplicationRef,
@@ -35,7 +35,7 @@ import {
   ɵɵdefineInjector,
   ɵɵdefineNgModule,
   ɵɵinject
-} from "./chunk-TSHKBXUZ.js";
+} from "./chunk-DMSQSH77.js";
 import {
   Observable,
   concatMap,
@@ -1428,7 +1428,7 @@ var FetchBackend = class _FetchBackend {
         const chunksAll = this.concatChunks(chunks, receivedLength);
         try {
           const contentType = response.headers.get(CONTENT_TYPE_HEADER) ?? "";
-          body = this.parseBody(request, chunksAll, contentType);
+          body = this.parseBody(request, chunksAll, contentType, status);
         } catch (error) {
           observer.error(new HttpErrorResponse({
             error,
@@ -1464,11 +1464,21 @@ var FetchBackend = class _FetchBackend {
       }
     });
   }
-  parseBody(request, binContent, contentType) {
+  parseBody(request, binContent, contentType, status) {
     switch (request.responseType) {
       case "json":
         const text = new TextDecoder().decode(binContent).replace(XSSI_PREFIX$1, "");
-        return text === "" ? null : JSON.parse(text);
+        if (text === "") {
+          return null;
+        }
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          if (status < 200 || status >= 300) {
+            return text;
+          }
+          throw e;
+        }
       case "text":
         return new TextDecoder().decode(binContent);
       case "blob":
@@ -2511,6 +2521,12 @@ var HttpResourceImpl = class extends ResourceImpl {
     }, defaultValue, equal, injector);
     this.client = injector.get(HttpClient);
   }
+  set(value) {
+    super.set(value);
+    this._headers.set(void 0);
+    this._progress.set(void 0);
+    this._statusCode.set(void 0);
+  }
 };
 var HTTP_TRANSFER_CACHE_ORIGIN_MAP = new InjectionToken(ngDevMode ? "HTTP_TRANSFER_CACHE_ORIGIN_MAP" : "");
 var BODY = "b";
@@ -2707,9 +2723,9 @@ export {
 @angular/common/fesm2022/module.mjs:
 @angular/common/fesm2022/http.mjs:
   (**
-   * @license Angular v20.1.2
+   * @license Angular v20.1.6
    * (c) 2010-2025 Google LLC. https://angular.io/
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-GRY5HVGL.js.map
+//# sourceMappingURL=chunk-P6VVOEFK.js.map

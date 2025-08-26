@@ -23,43 +23,49 @@
     <!-- Equipment Filter -->
     <div class="filter-group">
       <label class="filter-label">⚡ Ekipman</label>
-      <select 
-        [(ngModel)]="searchParams.equipment" 
-        (change)="onFilterChange()"
-        class="filter-select"
-      >
-        <option *ngFor="let option of equipmentOptions" [value]="option.value">
-          {{ option.label }}
-        </option>
-      </select>
+      <p-select 
+        [options]="equipmentOptions" 
+        [(ngModel)]="searchParams.equipment"
+        (onChange)="onFilterChange()"
+        placeholder="Ekipman seçin"
+        optionLabel="label"
+        optionValue="value"
+        [showClear]="true"
+        appendTo="body"
+        styleClass="w-full">
+      </p-select>
     </div>
 
     <!-- Level Filter -->
     <div class="filter-group">
       <label class="filter-label">🎯 Seviye</label>
-      <select 
-        [(ngModel)]="searchParams.level" 
-        (change)="onFilterChange()"
-        class="filter-select"
-      >
-        <option *ngFor="let option of levelOptions" [value]="option.value">
-          {{ option.label }}
-        </option>
-      </select>
+      <p-select 
+        [options]="levelOptions" 
+        [(ngModel)]="searchParams.level"
+        (onChange)="onFilterChange()"
+        placeholder="Seviye seçin"
+        optionLabel="label"
+        optionValue="value"
+        [showClear]="true"
+        appendTo="body"
+        styleClass="w-full">
+      </p-select>
     </div>
 
     <!-- Goal Filter -->
     <div class="filter-group">
       <label class="filter-label">🏆 Hedef</label>
-      <select 
-        [(ngModel)]="searchParams.goal" 
-        (change)="onFilterChange()"
-        class="filter-select"
-      >
-        <option *ngFor="let option of goalOptions" [value]="option.value">
-          {{ option.label }}
-        </option>
-      </select>
+      <p-select 
+        [options]="goalOptions" 
+        [(ngModel)]="searchParams.goal"
+        (onChange)="onFilterChange()"
+        placeholder="Hedef seçin"
+        optionLabel="label"
+        optionValue="value"
+        [showClear]="true"
+        appendTo="body"
+        styleClass="w-full">
+      </p-select>
     </div>
 
     <!-- Max Duration Filter -->

@@ -57,7 +57,7 @@ import {
   ɵɵinject,
   ɵɵinjectAttribute,
   ɵɵstyleProp
-} from "./chunk-TSHKBXUZ.js";
+} from "./chunk-DMSQSH77.js";
 import {
   Subject
 } from "./chunk-RTGP7ALM.js";
@@ -2342,7 +2342,7 @@ var NgForOf = class _NgForOf {
    */
   set ngForTrackBy(fn) {
     if ((typeof ngDevMode === "undefined" || ngDevMode) && fn != null && typeof fn !== "function") {
-      console.warn(`trackBy must be a function, but received ${JSON.stringify(fn)}. See https://angular.io/api/common/NgForOf#change-propagation for more information.`);
+      console.warn(`trackBy must be a function, but received ${JSON.stringify(fn)}. See https://angular.dev/api/common/NgForOf#change-propagation for more information.`);
     }
     this._trackByFn = fn;
   }
@@ -3716,7 +3716,7 @@ function isPlatformBrowser(platformId) {
 function isPlatformServer(platformId) {
   return platformId === PLATFORM_SERVER_ID;
 }
-var VERSION = new Version("20.1.2");
+var VERSION = new Version("20.1.6");
 var ViewportScroller = class _ViewportScroller {
   // De-sugared tree-shakable injection
   // See #23917
@@ -5186,9 +5186,9 @@ export {
 @angular/common/fesm2022/platform_navigation.mjs:
 @angular/common/fesm2022/common.mjs:
   (**
-   * @license Angular v20.1.2
+   * @license Angular v20.1.6
    * (c) 2010-2025 Google LLC. https://angular.io/
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-2TCOSCF6.js.map
+//# sourceMappingURL=chunk-QVJ2TQXA.js.map

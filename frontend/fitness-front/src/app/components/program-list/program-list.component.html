@@ -2,7 +2,12 @@
   
   <!-- Header with Add Button and Auth -->
   <div class="page-header">
-    <h2>🏋️ Fitness Programları</h2>
+    <h2 class="page-title">
+      <span class="title-logo-wrap">
+        <img src="assets/logo.png" alt="Logo" class="title-logo" />
+      </span>
+      Fitness Programları
+    </h2>
     <div class="header-actions">
       
       <!-- ADD PROGRAM BUTTON - SADECE AUTHENTICATED USER'LAR İÇİN -->
@@ -42,17 +47,8 @@
         </div>
       </div>
 
-      <!-- GUEST BUTTONS TEMPLATE -->
-      <ng-template #guestButtons>
-        <div class="auth-buttons">
-          <a routerLink="/auth/login" class="auth-btn login-btn">
-            🔑 Giriş Yap
-          </a>
-          <a routerLink="/auth/register" class="auth-btn register-btn">
-            📝 Kayıt Ol
-          </a>
-        </div>
-      </ng-template>
+      <!-- GUEST BUTTONS TEMPLATE (taşındı - üst hero'da gösteriliyor) -->
+      <ng-template #guestButtons></ng-template>
       
     </div>
   </div>
@@ -134,11 +130,5 @@
       <p>Filtreleri gevşeterek tekrar deneyin veya tüm programları görüntüleyin.</p>
     </div>
   </div>
-
-  <!-- Add Program Component (Modal) - SADECE AUTHENTICATED USER'LAR İÇİN -->
-  <app-add-program 
-    *ngIf="isAuthenticated$ | async"
-    (programAdded)="onProgramAdded()"
-  ></app-add-program>
 
 </div> 

@@ -1,0 +1,223 @@
+<div style="min-height: 100vh; padding: 20px; background-color: #f8f9fa;">
+  
+  <!-- Page Header -->
+  <div style="display: flex; align-items: center; margin-bottom: 30px; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <button 
+      type="button"
+      style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 20px;"
+      (click)="goBack()"
+      [disabled]="isSubmitting"
+    >
+      ← Geri Dön
+    </button>
+    <h2 style="margin: 0; color: #333; font-size: 24px;">✏️ Program Düzenle</h2>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" style="text-align: center; padding: 60px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div style="font-size: 18px; color: #666;">⏳ Program bilgileri yükleniyor...</div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="submitError && !isLoading" style="background: #f8d7da; color: #721c24; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+    ❌ {{ submitError }}
+  </div>
+
+  <!-- Main Form -->
+  <div *ngIf="!isLoading" style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    
+    <form [formGroup]="programForm" (ngSubmit)="onSubmit()" style="max-width: 800px;">
+      
+      <!-- Program Title -->
+      <div style="margin-bottom: 25px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+          📝 Program Başlığı *
+        </label>
+        <input 
+          type="text" 
+          formControlName="title" 
+          style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; transition: border-color 0.3s;"
+          [style.border-color]="hasError('title') ? '#dc3545' : '#ddd'"
+          placeholder="Örn: 5/3/1 Beginner Program"
+        >
+        <div *ngIf="hasError('title')" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          {{ getErrorMessage('title') }}
+        </div>
+      </div>
+
+      <!-- Program Description -->
+      <div style="margin-bottom: 25px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+          📄 Program Açıklaması *
+        </label>
+        <textarea 
+          formControlName="description" 
+          style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; min-height: 120px; resize: vertical; font-family: inherit; transition: border-color 0.3s;"
+          [style.border-color]="hasError('description') ? '#dc3545' : '#ddd'"
+          placeholder="Programın detaylı açıklamasını yazın..."
+          rows="5"
+        ></textarea>
+        <div *ngIf="hasError('description')" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          {{ getErrorMessage('description') }}
+        </div>
+      </div>
+
+      <!-- First Row: Equipment, Level, Goal -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
+        
+        <!-- Equipment -->
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+            ⚡ Ekipman *
+          </label>
+          <select 
+            formControlName="equipment" 
+            style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; transition: border-color 0.3s;"
+            [style.border-color]="hasError('equipment') ? '#dc3545' : '#ddd'"
+          >
+            <option value="">Seçiniz...</option>
+            <option *ngFor="let option of equipmentOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <div *ngIf="hasError('equipment')" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+            {{ getErrorMessage('equipment') }}
+          </div>
+        </div>
+
+        <!-- Level -->
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+            🎯 Seviye *
+          </label>
+          <select 
+            formControlName="level" 
+            style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; transition: border-color 0.3s;"
+            [style.border-color]="hasError('level') ? '#dc3545' : '#ddd'"
+          >
+            <option value="">Seçiniz...</option>
+            <option *ngFor="let option of levelOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <div *ngIf="hasError('level')" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+            {{ getErrorMessage('level') }}
+          </div>
+        </div>
+
+        <!-- Goal -->
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+            🏆 Hedef *
+          </label>
+          <select 
+            formControlName="goal" 
+            style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; transition: border-color 0.3s;"
+            [style.border-color]="hasError('goal') ? '#dc3545' : '#ddd'"
+          >
+            <option value="">Seçiniz...</option>
+            <option *ngFor="let option of goalOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <div *ngIf="hasError('goal')" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+            {{ getErrorMessage('goal') }}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Second Row: Numbers -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+        
+        <!-- Program Length -->
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+            📅 Program Süresi (hafta) *
+          </label>
+          <input 
+            type="number" 
+            formControlName="programLength" 
+            style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; transition: border-color 0.3s;"
+            [style.border-color]="hasError('programLength') ? '#dc3545' : '#ddd'"
+            placeholder="8"
+            min="1"
+          >
+          <div *ngIf="hasError('programLength')" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+            {{ getErrorMessage('programLength') }}
+          </div>
+        </div>
+
+        <!-- Time Per Workout -->
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+            ⏰ Antrenman Süresi (dk) *
+          </label>
+          <input 
+            type="number" 
+            formControlName="timePerWorkout" 
+            style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; transition: border-color 0.3s;"
+            [style.border-color]="hasError('timePerWorkout') ? '#dc3545' : '#ddd'"
+            placeholder="60"
+            min="1"
+          >
+          <div *ngIf="hasError('timePerWorkout')" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+            {{ getErrorMessage('timePerWorkout') }}
+          </div>
+        </div>
+
+        <!-- Total Exercises -->
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+            💪 Toplam Egzersiz *
+          </label>
+          <input 
+            type="number" 
+            formControlName="totalExercises" 
+            style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; transition: border-color 0.3s;"
+            [style.border-color]="hasError('totalExercises') ? '#dc3545' : '#ddd'"
+            placeholder="24"
+            min="1"
+          >
+          <div *ngIf="hasError('totalExercises')" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+            {{ getErrorMessage('totalExercises') }}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Form Actions -->
+      <div style="display: flex; justify-content: flex-end; gap: 15px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+        
+        <!-- Cancel Button -->
+        <button 
+          type="button" 
+          style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background-color 0.3s;"
+          (click)="goBack()"
+          [disabled]="isSubmitting"
+          onmouseover="this.style.backgroundColor='#5a6268'"
+          onmouseout="this.style.backgroundColor='#6c757d'"
+        >
+          ❌ İptal
+        </button>
+        
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background-color 0.3s;"
+          [disabled]="isSubmitting || programForm.invalid"
+          [style.background]="(isSubmitting || programForm.invalid) ? '#6c757d' : '#28a745'"
+          onmouseover="if (!this.disabled) this.style.backgroundColor='#218838'"
+          onmouseout="if (!this.disabled) this.style.backgroundColor='#28a745'"
+        >
+          <span *ngIf="!isSubmitting">✅ Programı Güncelle</span>
+          <span *ngIf="isSubmitting">⏳ Güncelleniyor...</span>
+        </button>
+        
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

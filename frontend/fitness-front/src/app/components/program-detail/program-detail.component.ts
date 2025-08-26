@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Program } from '../../models/program.model';
 import { ProgramService } from '../../services/program.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-program-detail',
@@ -22,6 +23,7 @@ export class ProgramDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private programService = inject(ProgramService);
+  private authService = inject(AuthService);
 
   ngOnInit(): void {
     console.log('🚀 ProgramDetailComponent başlatildi');
@@ -67,9 +69,29 @@ export class ProgramDetailComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
-  // Program düzenleme (gelecekte)
+  // Program düzenleme (sadece admin)
   editProgram(): void {
+    if (!this.authService.isAdmin()) {
+      console.log('❌ Yetkisiz erişim: Sadece adminler program düzenleyebilir');
+      alert('Bu işlemi gerçekleştirmek için admin yetkisine sahip olmanız gerekir.');
+      return;
+    }
+    
     console.log('✏️ Program duzenlenecek:', this.program?.id);
-    // TODO: Edit sayfasına yönlendir
+    if (this.programId) {
+      this.router.navigate(['/admin/program/edit', this.programId]);
+    }
+  }
+
+  // Admin kontrolü
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  // Haftalık plan sayfasına geçiş
+  goToWeeklyPlan(): void {
+    if (this.programId) {
+      this.router.navigate(['/program', this.programId, 'weekly-plan']);
+    }
   }
 } 

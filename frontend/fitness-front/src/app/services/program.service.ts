@@ -59,7 +59,7 @@ export class ProgramService {
   }
 
   // Program güncelle - YENİ!
-  updateProgram(id: number, programData: CreateProgramRequest): Observable<Program> {
+  updateProgram(id: number, programData: Partial<CreateProgramRequest>): Observable<Program> {
     const url = `${this.API_URL}/${id}`;
     console.log('✏️ Update Program API çağrısı:', url, 'Data:', programData);
     return this.http.put<Program>(url, programData);
@@ -70,5 +70,12 @@ export class ProgramService {
     const url = `${this.API_URL}/${id}`;
     console.log('🗑️ Delete Program API çağrısı:', url);
     return this.http.delete<void>(url);
+  }
+
+  // Haftalık planı getir - YENİ!
+  getWeeklyPlan(programId: number): Observable<{ programId: number; entries: { dayOfWeek: string; content: string }[] }> {
+    const url = `${this.API_URL}/${programId}/weekly-plan`;
+    console.log('📅 Weekly Plan API çağrısı:', url);
+    return this.http.get<{ programId: number; entries: { dayOfWeek: string; content: string }[] }>(url);
   }
 } 

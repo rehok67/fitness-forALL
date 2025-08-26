@@ -1,0 +1,63 @@
+.weekly-plan-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  h2 { display: flex; align-items: center; gap: 10px; }
+  .app-inline-logo { height: 28px; width: 28px; border-radius: 6px; object-fit: cover; }
+}
+
+.back-box {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.status {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+
+  &.loading { background: #fff3cd; color: #856404; }
+  &.error { background: #f8d7da; color: #721c24; }
+}
+
+.rows { display: flex; flex-direction: column; gap: 24px; }
+.row { display: grid; grid-template-columns: 140px 1fr; align-items: stretch; gap: 16px; }
+.day-badge { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; }
+.day-label { color: #1f2937; font-weight: 700; }
+.day-key { font-size: 12px; color: #6b7280; padding: 2px 8px; border: 1px dashed #cbd5e1; border-radius: 999px; }
+.day-card { width: 100%; }
+
+.content {
+  min-height: 100px;
+  white-space: pre-wrap;
+  padding: 8px 4px;
+}
+
+/* PrimeNG Card override for accent border */
+:host ::ng-deep .p-card.day-card .p-card-body {
+  border-left: 4px solid var(--accent, #42A5F5);
+  transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+:host ::ng-deep .p-card.day-card .p-card-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Hover/interactivity */
+:host ::ng-deep .p-card.day-card:hover .p-card-body {
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+

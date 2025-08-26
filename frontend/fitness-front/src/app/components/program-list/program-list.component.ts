@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Program, ProgramSearchParams } from '../../models/program.model';
@@ -6,19 +6,16 @@ import { ProgramService } from '../../services/program.service';
 import { AuthService } from '../../services/auth.service';
 import { UserInfo, AUTH_STORAGE_KEYS } from '../../models/auth.model';
 import { SearchFilterComponent } from '../search-filter/search-filter.component';
-import { AddProgramComponent } from '../add-program/add-program.component';
 import { Observable } from 'rxjs';
+// import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-program-list',
-  imports: [CommonModule, SearchFilterComponent, AddProgramComponent, RouterLink],
+  imports: [CommonModule, SearchFilterComponent, RouterLink],
   templateUrl: './program-list.component.html',
   styleUrl: './program-list.component.scss'
 })
 export class ProgramListComponent implements OnInit {
-  
-  // ViewChild - Child component'e erişim
-  @ViewChild(AddProgramComponent) addProgramComponent!: AddProgramComponent;
 
   // Component state (durum)
   programs: Program[] = [];
@@ -35,6 +32,8 @@ export class ProgramListComponent implements OnInit {
   private programService = inject(ProgramService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+  // private modalService = inject(ModalService);
 
   constructor() {
     console.log('📝 ProgramListComponent oluşturuldu');
@@ -56,6 +55,8 @@ export class ProgramListComponent implements OnInit {
   ngOnInit(): void {
     console.log('🚀 ProgramListComponent başlatildi');
     this.loadPrograms();
+    
+  // Modal akışı kaldırıldı; create sayfasına yönlendirme kullanılıyor.
   }
 
   // Programları yükle (filtresiz - tüm programlar)
@@ -127,10 +128,10 @@ export class ProgramListComponent implements OnInit {
     return program.id;
   }
 
-  // Add program modal aç
+  // Add program - navigate to create page
   openAddProgramModal(): void {
-    console.log('➕ Add program modal aciliyor');
-    this.addProgramComponent.showModal = true;
+    console.log('➕ Yeni program sayfasına gidiliyor');
+    this.router.navigate(['/program/create']);
   }
 
   // Program eklendikten sonra çağrılır

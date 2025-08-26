@@ -50,12 +50,11 @@ var REACTIVE_NODE = {
   version: 0,
   lastCleanEpoch: 0,
   dirty: false,
-  producerNode: void 0,
-  producerLastReadVersion: void 0,
-  producerIndexOfThis: void 0,
-  nextProducerIndex: 0,
-  liveConsumerNode: void 0,
-  liveConsumerIndexOfThis: void 0,
+  producers: void 0,
+  producersTail: void 0,
+  consumers: void 0,
+  consumersTail: void 0,
+  recomputing: false,
   consumerAllowSignalWrites: false,
   consumerIsAlwaysLive: false,
   kind: "unknown",
@@ -75,19 +74,45 @@ function producerAccessed(node) {
     return;
   }
   activeConsumer.consumerOnSignalRead(node);
-  const idx = activeConsumer.nextProducerIndex++;
-  assertConsumerNode(activeConsumer);
-  if (idx < activeConsumer.producerNode.length && activeConsumer.producerNode[idx] !== node) {
-    if (consumerIsLive(activeConsumer)) {
-      const staleProducer = activeConsumer.producerNode[idx];
-      producerRemoveLiveConsumerAtIndex(staleProducer, activeConsumer.producerIndexOfThis[idx]);
+  const prevProducerLink = activeConsumer.producersTail;
+  if (prevProducerLink !== void 0 && prevProducerLink.producer === node) {
+    return;
+  }
+  let nextProducerLink = void 0;
+  const isRecomputing = activeConsumer.recomputing;
+  if (isRecomputing) {
+    nextProducerLink = prevProducerLink !== void 0 ? prevProducerLink.nextProducer : activeConsumer.producers;
+    if (nextProducerLink !== void 0 && nextProducerLink.producer === node) {
+      activeConsumer.producersTail = nextProducerLink;
+      nextProducerLink.lastReadVersion = node.version;
+      return;
     }
   }
-  if (activeConsumer.producerNode[idx] !== node) {
-    activeConsumer.producerNode[idx] = node;
-    activeConsumer.producerIndexOfThis[idx] = consumerIsLive(activeConsumer) ? producerAddLiveConsumer(node, activeConsumer, idx) : 0;
+  const prevConsumerLink = node.consumersTail;
+  if (prevConsumerLink !== void 0 && prevConsumerLink.consumer === activeConsumer && // However, we have to make sure that the link we've discovered isn't from a node that is incrementally rebuilding its producer list
+  (!isRecomputing || isValidLink(prevConsumerLink, activeConsumer))) {
+    return;
   }
-  activeConsumer.producerLastReadVersion[idx] = node.version;
+  const isLive = consumerIsLive(activeConsumer);
+  const newLink = {
+    producer: node,
+    consumer: activeConsumer,
+    // instead of eagerly destroying the previous link, we delay until we've finished recomputing
+    // the producers list, so that we can destroy all of the old links at once.
+    nextProducer: nextProducerLink,
+    prevConsumer: prevConsumerLink,
+    lastReadVersion: node.version,
+    nextConsumer: void 0
+  };
+  activeConsumer.producersTail = newLink;
+  if (prevProducerLink !== void 0) {
+    prevProducerLink.nextProducer = newLink;
+  } else {
+    activeConsumer.producers = newLink;
+  }
+  if (isLive) {
+    producerAddLiveConsumer(node, newLink);
+  }
 }
 function producerIncrementEpoch() {
   epoch++;
@@ -107,13 +132,14 @@ function producerUpdateValueVersion(node) {
   producerMarkClean(node);
 }
 function producerNotifyConsumers(node) {
-  if (node.liveConsumerNode === void 0) {
+  if (node.consumers === void 0) {
     return;
   }
   const prev = inNotificationPhase;
   inNotificationPhase = true;
   try {
-    for (const consumer of node.liveConsumerNode) {
+    for (let link = node.consumers; link !== void 0; link = link.nextConsumer) {
+      const consumer = link.consumer;
       if (!consumer.dirty) {
         consumerMarkDirty(consumer);
       }
@@ -135,30 +161,37 @@ function producerMarkClean(node) {
   node.lastCleanEpoch = epoch;
 }
 function consumerBeforeComputation(node) {
-  node && (node.nextProducerIndex = 0);
+  if (node) {
+    node.producersTail = void 0;
+    node.recomputing = true;
+  }
   return setActiveConsumer(node);
 }
 function consumerAfterComputation(node, prevConsumer) {
   setActiveConsumer(prevConsumer);
-  if (!node || node.producerNode === void 0 || node.producerIndexOfThis === void 0 || node.producerLastReadVersion === void 0) {
+  if (!node) {
     return;
   }
-  if (consumerIsLive(node)) {
-    for (let i = node.nextProducerIndex; i < node.producerNode.length; i++) {
-      producerRemoveLiveConsumerAtIndex(node.producerNode[i], node.producerIndexOfThis[i]);
+  node.recomputing = false;
+  const producersTail = node.producersTail;
+  let toRemove = producersTail !== void 0 ? producersTail.nextProducer : node.producers;
+  if (toRemove !== void 0) {
+    if (consumerIsLive(node)) {
+      do {
+        toRemove = producerRemoveLiveConsumerLink(toRemove);
+      } while (toRemove !== void 0);
     }
-  }
-  while (node.producerNode.length > node.nextProducerIndex) {
-    node.producerNode.pop();
-    node.producerLastReadVersion.pop();
-    node.producerIndexOfThis.pop();
+    if (producersTail !== void 0) {
+      producersTail.nextProducer = void 0;
+    } else {
+      node.producers = void 0;
+    }
   }
 }
 function consumerPollProducersForChange(node) {
-  assertConsumerNode(node);
-  for (let i = 0; i < node.producerNode.length; i++) {
-    const producer = node.producerNode[i];
-    const seenVersion = node.producerLastReadVersion[i];
+  for (let link = node.producers; link !== void 0; link = link.nextProducer) {
+    const producer = link.producer;
+    const seenVersion = link.lastReadVersion;
     if (seenVersion !== producer.version) {
       return true;
     }
@@ -170,66 +203,81 @@ function consumerPollProducersForChange(node) {
   return false;
 }
 function consumerDestroy(node) {
-  assertConsumerNode(node);
   if (consumerIsLive(node)) {
-    for (let i = 0; i < node.producerNode.length; i++) {
-      producerRemoveLiveConsumerAtIndex(node.producerNode[i], node.producerIndexOfThis[i]);
+    let link = node.producers;
+    while (link !== void 0) {
+      link = producerRemoveLiveConsumerLink(link);
     }
   }
-  node.producerNode.length = node.producerLastReadVersion.length = node.producerIndexOfThis.length = 0;
-  if (node.liveConsumerNode) {
-    node.liveConsumerNode.length = node.liveConsumerIndexOfThis.length = 0;
+  node.producers = void 0;
+  node.producersTail = void 0;
+  node.consumers = void 0;
+  node.consumersTail = void 0;
+}
+function producerAddLiveConsumer(node, link) {
+  const consumersTail = node.consumersTail;
+  const wasLive = consumerIsLive(node);
+  if (consumersTail !== void 0) {
+    link.nextConsumer = consumersTail.nextConsumer;
+    consumersTail.nextConsumer = link;
+  } else {
+    link.nextConsumer = void 0;
+    node.consumers = link;
+  }
+  link.prevConsumer = consumersTail;
+  node.consumersTail = link;
+  if (!wasLive) {
+    for (let link2 = node.producers; link2 !== void 0; link2 = link2.nextProducer) {
+      producerAddLiveConsumer(link2.producer, link2);
+    }
   }
 }
-function producerAddLiveConsumer(node, consumer, indexOfThis) {
-  assertProducerNode(node);
-  if (node.liveConsumerNode.length === 0 && isConsumerNode(node)) {
-    for (let i = 0; i < node.producerNode.length; i++) {
-      node.producerIndexOfThis[i] = producerAddLiveConsumer(node.producerNode[i], node, i);
+function producerRemoveLiveConsumerLink(link) {
+  const producer = link.producer;
+  const nextProducer = link.nextProducer;
+  const nextConsumer = link.nextConsumer;
+  const prevConsumer = link.prevConsumer;
+  link.nextConsumer = void 0;
+  link.prevConsumer = void 0;
+  if (nextConsumer !== void 0) {
+    nextConsumer.prevConsumer = prevConsumer;
+  } else {
+    producer.consumersTail = prevConsumer;
+  }
+  if (prevConsumer !== void 0) {
+    prevConsumer.nextConsumer = nextConsumer;
+  } else {
+    producer.consumers = nextConsumer;
+    if (!consumerIsLive(producer)) {
+      let producerLink = producer.producers;
+      while (producerLink !== void 0) {
+        producerLink = producerRemoveLiveConsumerLink(producerLink);
+      }
     }
   }
-  node.liveConsumerIndexOfThis.push(indexOfThis);
-  return node.liveConsumerNode.push(consumer) - 1;
-}
-function producerRemoveLiveConsumerAtIndex(node, idx) {
-  assertProducerNode(node);
-  if (typeof ngDevMode !== "undefined" && ngDevMode && idx >= node.liveConsumerNode.length) {
-    throw new Error(`Assertion error: active consumer index ${idx} is out of bounds of ${node.liveConsumerNode.length} consumers)`);
-  }
-  if (node.liveConsumerNode.length === 1 && isConsumerNode(node)) {
-    for (let i = 0; i < node.producerNode.length; i++) {
-      producerRemoveLiveConsumerAtIndex(node.producerNode[i], node.producerIndexOfThis[i]);
-    }
-  }
-  const lastIdx = node.liveConsumerNode.length - 1;
-  node.liveConsumerNode[idx] = node.liveConsumerNode[lastIdx];
-  node.liveConsumerIndexOfThis[idx] = node.liveConsumerIndexOfThis[lastIdx];
-  node.liveConsumerNode.length--;
-  node.liveConsumerIndexOfThis.length--;
-  if (idx < node.liveConsumerNode.length) {
-    const idxProducer = node.liveConsumerIndexOfThis[idx];
-    const consumer = node.liveConsumerNode[idx];
-    assertConsumerNode(consumer);
-    consumer.producerIndexOfThis[idxProducer] = idx;
-  }
+  return nextProducer;
 }
 function consumerIsLive(node) {
-  return node.consumerIsAlwaysLive || (node?.liveConsumerNode?.length ?? 0) > 0;
-}
-function assertConsumerNode(node) {
-  node.producerNode ??= [];
-  node.producerIndexOfThis ??= [];
-  node.producerLastReadVersion ??= [];
-}
-function assertProducerNode(node) {
-  node.liveConsumerNode ??= [];
-  node.liveConsumerIndexOfThis ??= [];
-}
-function isConsumerNode(node) {
-  return node.producerNode !== void 0;
+  return node.consumerIsAlwaysLive || node.consumers !== void 0;
 }
 function runPostProducerCreatedFn(node) {
   postProducerCreatedFn?.(node);
+}
+function isValidLink(checkLink, consumer) {
+  const producersTail = consumer.producersTail;
+  if (producersTail !== void 0) {
+    let link = consumer.producers;
+    do {
+      if (link === checkLink) {
+        return true;
+      }
+      if (link === producersTail) {
+        break;
+      }
+      link = link.nextProducer;
+    } while (link !== void 0);
+  }
+  return false;
 }
 function createComputed(computation, equal) {
   const node = Object.create(COMPUTED_NODE);
@@ -5395,6 +5443,9 @@ var TRANSFER_STATE_TOKEN_ID = "__nghData__";
 var NGH_DATA_KEY = makeStateKey(TRANSFER_STATE_TOKEN_ID);
 var TRANSFER_STATE_DEFER_BLOCKS_INFO = "__nghDeferData__";
 var NGH_DEFER_BLOCKS_KEY = makeStateKey(TRANSFER_STATE_DEFER_BLOCKS_INFO);
+function isInternalHydrationTransferStateKey(key) {
+  return key === TRANSFER_STATE_TOKEN_ID || key === TRANSFER_STATE_DEFER_BLOCKS_INFO;
+}
 var NGH_ATTR_NAME = "ngh";
 var SSR_CONTENT_INTEGRITY_MARKER = "nghm";
 var _retrieveHydrationInfoImpl = () => null;
@@ -11269,7 +11320,7 @@ var ComponentFactory2 = class extends ComponentFactory$1 {
   }
 };
 function createRootTView(rootSelectorOrNode, componentDef, componentBindings, directives) {
-  const tAttributes = rootSelectorOrNode ? ["ng-version", "20.1.2"] : (
+  const tAttributes = rootSelectorOrNode ? ["ng-version", "20.1.6"] : (
     // Extract attributes and classes from the first selector only to match VE behavior.
     extractAttrsAndClassesFromSelector(componentDef.selectors[0])
   );
@@ -12103,7 +12154,7 @@ function resolveComponentResources(resourceResolver) {
     let promise = urlMap.get(url);
     if (!promise) {
       const resp = resourceResolver(url);
-      urlMap.set(url, promise = resp.then(unwrapResponse));
+      urlMap.set(url, promise = resp.then((res) => unwrapResponse(url, res)));
     }
     return promise;
   }
@@ -12170,8 +12221,14 @@ function restoreComponentResolutionQueue(queue) {
 function isComponentResourceResolutionQueueEmpty() {
   return componentResourceResolutionQueue.size === 0;
 }
-function unwrapResponse(response) {
-  return typeof response == "string" ? response : response.text();
+function unwrapResponse(url, response) {
+  if (typeof response === "string") {
+    return response;
+  }
+  if (response.status !== void 0 && response.status !== 200) {
+    return Promise.reject(new RuntimeError(918, ngDevMode && `Could not load resource: ${url}. Response status: ${response.status}`));
+  }
+  return response.text();
 }
 function componentDefResolved(type) {
   componentDefPendingResolution.delete(type);
@@ -14920,6 +14977,9 @@ function getNodesAndEdgesFromSignalMap(signalMap) {
         label: consumer.debugName ?? consumer.lView?.[HOST]?.tagName?.toLowerCase?.(),
         kind: consumer.kind,
         epoch: consumer.version,
+        // The `lView[CONTEXT]` is a reference to an instance of the component's class.
+        // We get the constructor so that `inspect(.constructor)` shows the component class.
+        debuggableFn: consumer.lView?.[CONTEXT]?.constructor,
         id
       });
     } else {
@@ -14951,7 +15011,11 @@ function extractSignalNodesAndEdgesFromRoots(nodes, signalDependenciesMap = /* @
     if (signalDependenciesMap.has(node)) {
       continue;
     }
-    const producerNodes = node.producerNode ?? [];
+    const producerNodes = [];
+    for (let link = node.producers; link !== void 0; link = link.nextProducer) {
+      const producer = link.producer;
+      producerNodes.push(producer);
+    }
     signalDependenciesMap.set(node, producerNodes);
     extractSignalNodesAndEdgesFromRoots(producerNodes, signalDependenciesMap);
   }
@@ -22335,6 +22399,9 @@ function resource(options) {
   const params = options.params ?? oldNameForParams ?? (() => null);
   return new ResourceImpl(params, getLoader(options), options.defaultValue, options.equal ? wrapEqualityFn(options.equal) : void 0, options.injector ?? inject2(Injector), RESOURCE_VALUE_THROWS_ERRORS_DEFAULT);
 }
+function setResourceValueThrowsErrors(value) {
+  RESOURCE_VALUE_THROWS_ERRORS_DEFAULT = value;
+}
 var BaseWritableResource = class {
   value;
   constructor(value) {
@@ -22348,11 +22415,16 @@ var BaseWritableResource = class {
     this.set(updateFn(untracked2(this.value)));
   }
   isLoading = computed(() => this.status() === "loading" || this.status() === "reloading");
-  hasValue() {
+  // Use a computed here to avoid triggering reactive consumers if the value changes while staying
+  // either defined or undefined.
+  isValueDefined = computed(() => {
     if (this.isError()) {
       return false;
     }
     return this.value() !== void 0;
+  });
+  hasValue() {
+    return this.isValueDefined();
   }
   asReadonly() {
     return this;
@@ -23963,7 +24035,7 @@ var Version = class {
     this.patch = parts.slice(2).join(".");
   }
 };
-var VERSION = new Version("20.1.2");
+var VERSION = new Version("20.1.6");
 function compileNgModuleFactory(injector, options, moduleType) {
   ngDevMode && assertNgModuleType(moduleType);
   const moduleFactory = new NgModuleFactory2(moduleType);
@@ -24183,35 +24255,31 @@ function bootstrap(config) {
       const initStatus = envInjector.get(ApplicationInitStatus);
       initStatus.runInitializers();
       return initStatus.donePromise.then(() => {
-        try {
-          const localeId = envInjector.get(LOCALE_ID, DEFAULT_LOCALE_ID);
-          setLocaleId(localeId || DEFAULT_LOCALE_ID);
-          const enableRootComponentBoostrap = envInjector.get(ENABLE_ROOT_COMPONENT_BOOTSTRAP, true);
-          if (!enableRootComponentBoostrap) {
-            if (isApplicationBootstrapConfig(config)) {
-              return envInjector.get(ApplicationRef);
-            }
-            config.allPlatformModules.push(config.moduleRef);
-            return config.moduleRef;
-          }
-          if (typeof ngDevMode === "undefined" || ngDevMode) {
-            const imagePerformanceService = envInjector.get(ImagePerformanceWarning);
-            imagePerformanceService.start();
-          }
+        const localeId = envInjector.get(LOCALE_ID, DEFAULT_LOCALE_ID);
+        setLocaleId(localeId || DEFAULT_LOCALE_ID);
+        const enableRootComponentBoostrap = envInjector.get(ENABLE_ROOT_COMPONENT_BOOTSTRAP, true);
+        if (!enableRootComponentBoostrap) {
           if (isApplicationBootstrapConfig(config)) {
-            const appRef = envInjector.get(ApplicationRef);
-            if (config.rootComponent !== void 0) {
-              appRef.bootstrap(config.rootComponent);
-            }
-            return appRef;
-          } else {
-            moduleBootstrapImpl?.(config.moduleRef, config.allPlatformModules);
-            return config.moduleRef;
+            return envInjector.get(ApplicationRef);
           }
-        } finally {
-          pendingTasks.remove(taskId);
+          config.allPlatformModules.push(config.moduleRef);
+          return config.moduleRef;
         }
-      });
+        if (typeof ngDevMode === "undefined" || ngDevMode) {
+          const imagePerformanceService = envInjector.get(ImagePerformanceWarning);
+          imagePerformanceService.start();
+        }
+        if (isApplicationBootstrapConfig(config)) {
+          const appRef = envInjector.get(ApplicationRef);
+          if (config.rootComponent !== void 0) {
+            appRef.bootstrap(config.rootComponent);
+          }
+          return appRef;
+        } else {
+          moduleBootstrapImpl?.(config.moduleRef, config.allPlatformModules);
+          return config.moduleRef;
+        }
+      }).finally(() => void pendingTasks.remove(taskId));
     });
   });
 }
@@ -26396,6 +26464,18 @@ function ɵɵngDeclarePipe(decl) {
   });
   return compiler.compilePipeDeclaration(angularCoreEnv, `ng:///${decl.type.name}/ɵpipe.js`, decl);
 }
+function getTransferState(injector) {
+  const doc = getDocument();
+  const appId = injector.get(APP_ID);
+  const transferState = retrieveTransferredState(doc, appId);
+  const filteredEntries = {};
+  for (const [key, value] of Object.entries(transferState)) {
+    if (!isInternalHydrationTransferStateKey(key)) {
+      filteredEntries[key] = value;
+    }
+  }
+  return filteredEntries;
+}
 var NOT_SET = Symbol("NOT_SET");
 var EMPTY_CLEANUP_SET = /* @__PURE__ */ new Set();
 var AFTER_RENDER_PHASE_EFFECT_NODE = (() => __spreadProps(__spreadValues({}, SIGNAL_NODE), {
@@ -26985,6 +27065,7 @@ export {
   effect,
   linkedSignal,
   resource,
+  setResourceValueThrowsErrors,
   ResourceImpl,
   encapsulateResourceError,
   ɵINPUT_SIGNAL_BRAND_WRITE_TYPE,
@@ -27057,6 +27138,7 @@ export {
   ɵɵngDeclareInjector,
   ɵɵngDeclareNgModule,
   ɵɵngDeclarePipe,
+  getTransferState,
   afterRenderEffect,
   createComponent,
   reflectComponentType,
@@ -27078,7 +27160,7 @@ export {
 @angular/core/fesm2022/resource.mjs:
 @angular/core/fesm2022/primitives/event-dispatch.mjs:
   (**
-   * @license Angular v20.1.2
+   * @license Angular v20.1.6
    * (c) 2010-2025 Google LLC. https://angular.io/
    * License: MIT
    *)
@@ -27086,7 +27168,7 @@ export {
 @angular/core/fesm2022/debug_node.mjs:
 @angular/core/fesm2022/core.mjs:
   (**
-   * @license Angular v20.1.2
+   * @license Angular v20.1.6
    * (c) 2010-2025 Google LLC. https://angular.io/
    * License: MIT
    *)
@@ -27107,4 +27189,4 @@ export {
    * found in the LICENSE file at https://angular.dev/license
    *)
 */
-//# sourceMappingURL=chunk-TSHKBXUZ.js.map
+//# sourceMappingURL=chunk-DMSQSH77.js.map

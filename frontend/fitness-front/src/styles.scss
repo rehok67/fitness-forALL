@@ -1,1 +1,55 @@
+/* CDK Overlay modal panel tweaks */
+.app-modal-pane {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483646 !important; /* Keep below backdrop (auto), but above app */
+}
+
+.cdk-overlay-dark-backdrop {
+  background: rgba(0, 0, 0, 0.55) !important;
+}
 /* You can add global styles to this file, and also import other style files */
+
+/* PrimeNG Select Overlay - güzel görünüm ve backdrop */
+.p-select-overlay {
+  z-index: 1100 !important;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+/* Sadece dropdown'un arkasına yerel backdrop - aşağıda ve gradient */
+.p-select-overlay::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: -15px;
+  right: -15px;
+  bottom: -15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: -1;
+  border-radius: 10px;
+  backdrop-filter: blur(3px);
+  opacity: 0.9;
+}
+
+/* PrimeNG Select clear button düzenlemesi */
+.p-select .p-select-clear-icon {
+  right: 2.5rem !important;
+  z-index: 10 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 50% !important;
+  padding: 2px !important;
+  margin-right: 0.25rem !important;
+}
+
+/* Select input alanı padding düzenlemesi */
+.p-select .p-select-label {
+  padding-right: 3.5rem !important;
+}

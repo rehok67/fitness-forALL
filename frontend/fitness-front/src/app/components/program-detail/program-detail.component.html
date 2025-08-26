@@ -28,8 +28,15 @@
     <div class="program-header">
       <h2 class="program-title">{{ program.title }}</h2>
       <div class="program-actions">
-        <button (click)="editProgram()" class="edit-btn">
+        <button 
+          *ngIf="isAdmin()" 
+          (click)="editProgram()" 
+          class="edit-btn"
+          title="Bu programı düzenle (Sadece adminler)">
           ✏️ Düzenle
+        </button>
+        <button (click)="goToWeeklyPlan()" class="edit-btn" title="Haftalık Plan">
+          📅 Haftalık Plan
         </button>
       </div>
     </div>

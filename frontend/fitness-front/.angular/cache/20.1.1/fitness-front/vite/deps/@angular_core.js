@@ -224,6 +224,7 @@ import {
   getOutputDestroyRef,
   getPlatform,
   getSanitizationBypassType,
+  getTransferState,
   importProvidersFrom,
   inject,
   injectChangeDetectorRef,
@@ -284,6 +285,7 @@ import {
   setDocument,
   setInjectorProfilerContext,
   setLocaleId,
+  setResourceValueThrowsErrors,
   setTestabilityGetter,
   signal,
   startMeasuring,
@@ -484,7 +486,7 @@ import {
   ɵɵvalidateIframeAttribute,
   ɵɵviewQuery,
   ɵɵviewQuerySignal
-} from "./chunk-TSHKBXUZ.js";
+} from "./chunk-DMSQSH77.js";
 import "./chunk-G6ECYYJH.js";
 import "./chunk-YVXMBCE5.js";
 import "./chunk-RTGP7ALM.js";
@@ -751,6 +753,7 @@ export {
   getLocalePluralCase as ɵgetLocalePluralCase,
   getOutputDestroyRef as ɵgetOutputDestroyRef,
   getSanitizationBypassType as ɵgetSanitizationBypassType,
+  getTransferState as ɵgetTransferState,
   ɵgetUnknownElementStrictMode,
   ɵgetUnknownPropertyStrictMode,
   _global as ɵglobal,
@@ -786,6 +789,7 @@ export {
   setDocument as ɵsetDocument,
   setInjectorProfilerContext as ɵsetInjectorProfilerContext,
   setLocaleId as ɵsetLocaleId,
+  setResourceValueThrowsErrors as ɵsetResourceValueThrowsErrors,
   ɵsetUnknownElementStrictMode,
   ɵsetUnknownPropertyStrictMode,
   startMeasuring as ɵstartMeasuring,

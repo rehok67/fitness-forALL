@@ -1,0 +1,38 @@
+<div class="weekly-plan-container">
+  <div class="header">
+    <div class="back-box">
+      <p-button
+        label="Geri"
+        icon="pi pi-arrow-left"
+        [rounded]="true"
+        variant="outlined"
+        severity="secondary"
+        pRipple
+        (onClick)="goBack()"
+      />
+    </div>
+    <h2><i class="pi pi-calendar"></i> Haftalık Plan</h2>
+  </div>
+
+  <div *ngIf="loading" class="status loading">⏳ Yükleniyor...</div>
+  <div *ngIf="error" class="status error">❌ {{ error }}</div>
+
+  <div *ngIf="!loading && !error" class="rows" [@listStagger]>
+    <div class="row" *ngFor="let d of dayOptions">
+      <div class="day-badge">
+        <div class="day-label">{{ d.label }}</div>
+        <div class="day-key">{{ d.key }}</div>
+      </div>
+      <p-card class="day-card" [ngStyle]="{'--accent': accentColor(d.key)}" pRipple>
+        <div class="content">{{ dayToContent[d.key] || '—' }}</div>
+        <ng-template pTemplate="footer">
+          <div class="card-footer">
+            <button pButton pRipple type="button" icon="pi pi-chevron-right" label="Egzersizlere Git" (click)="goToExercises(d.key)"></button>
+          </div>
+        </ng-template>
+      </p-card>
+    </div>
+  </div>
+</div>
+
+

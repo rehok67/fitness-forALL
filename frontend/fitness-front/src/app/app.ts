@@ -1,11 +1,12 @@
 import { Component, signal, OnInit, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { ProgramService } from './services/program.service';
 import { Program } from './models/program.model';
+import { AppTopbarComponent } from './components/app-topbar/app-topbar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, AppTopbarComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -14,13 +15,14 @@ export class App implements OnInit {
   
   // Service'i enjekte et
   private programService = inject(ProgramService);
+  private router = inject(Router);
   
   ngOnInit() {
     console.log('🚀 Component başlatildi');
     this.testBackendConnection();
   }
   
-  // Backend baglantisini test et - Artık typed!
+
   testBackendConnection() {
     console.log('📞 Service uzerinden backend ile baglanti kuruluyor...');
     
