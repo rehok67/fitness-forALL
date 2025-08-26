@@ -259,3 +259,57 @@ Bu proje aşağıdaki açık kaynak teknolojileri kullanmaktadır:
 ---
 
 ⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın! 
+
+## 🧠 Yapay Zekâ ile Veri Üretimi Süreci
+
+Bu proje kapsamında, hazır veri setinden yeni içerikler üretmek amacıyla bir LLM (Large Language Model) entegrasyonu gerçekleştirildi. Sürecin tüm akışı `llm entegrasyonu ve veri üretimi.ipynb` notebook'u içinde bulunmaktadır.
+
+### 1) Ortam Hazırlığı
+- **Python** ortamında gerekli kütüphaneler kuruldu (ör. `transformers`, `pandas`, vb.).
+- Veri setine yerel dosyadan veya Google Drive üzerinden CSV formatında erişildi.
+
+Örnek kurulum (öneri):
+
+```bash
+pip install transformers accelerate sentencepiece
+# PyTorch kurulumu için: https://pytorch.org/get-started/locally/
+```
+
+### 2) Veri Yükleme
+- `program_summary_processed.csv` bir DataFrame olarak okundu.
+- Her satırdan `title`, `goal`, `level`, `equipment` gibi alanlar seçilerek modele girdi olacak biçimde hazırlandı.
+
+### 3) Modelin Yüklenmesi
+- Hugging Face Model Hub üzerinden `tencent/Hunyuan-7B-Instruct` modeli seçildi.
+- `AutoTokenizer` ve `AutoModelForCausalLM` ile model yüklendi.
+- GPU desteği için `device_map="auto"` kullanıldı.
+
+### 4) Prompt Hazırlığı
+- Sisteme kısa ve net bir talimat verildi: “Yedi günlük antrenman planını yalnızca gün başlıklarıyla üret.”
+- Kullanıcı mesajı, satırdaki verilerden (`title`, `goal`, `level`, `equipment`) dinamik olarak oluşturuldu.
+
+### 5) Çıktı Üretimi
+- `model.generate()` ile yanıt üretildi.
+- Çıktılar düzenli hâle getirilerek `<answer>` bloklarından ayrıştırıldı.
+- Yanıtlar “Day 1 … Day 7” şeklinde bölünerek yapılandırıldı.
+
+### 6) Sonuçların Kaydedilmesi
+- Tüm sonuçlar `all_schedules` listesine eklendi.
+- Pandas ile yeni bir DataFrame oluşturuldu.
+- Çıktılar `parcali_programs.csv` dosyasına kaydedildi.
+
+### Neden Bu Yaklaşım?
+- **Maliyet/Kısıt aşımı**: API kısıtlamaları ve maliyetleri aşmak için model doğrudan indirildi.
+- **Veri gizliliği**: Dış servislere veri göndermeden, local/Colab ortamında süreç yürütüldü.
+- **Esneklik**: Aynı yapı bir sunucuya deploy edilerek 7/24 çalışan bir servis hâline getirilebilir.
+
+### Neden LLM Entegrasyonu Ekledik?
+- **Veri Üretimini Genişletmek**: Statik verinin ötesine geçip yeni türev çıktılar üretildi; uygulama dinamik içerik üretebilir hâle geldi.
+- **Model Kullanımını Deneyimlemek**: Hugging Face modelleri local/Colab ortamında, API kullanmadan entegre edildi.
+- **Gerçek Hayat Senaryolarına Yaklaşmak**: Müşteri destek robotları, bakım-asistan sistemleri gibi alanlara uyarlanabilir bir prototip oluşturuldu.
+- **Veri Gizliliğini Vurgulamak**: Dış servis sağlayıcılarına veri göndermeden AI kullanımının mümkün olduğu gösterildi.
+
+### İlgili Dosyalar
+- Notebook: `llm entegrasyonu ve veri üretimi.ipynb`
+- Girdi veri seti: `program_summary_processed.csv`
+- Üretilen çıktı: `parcali_programs.csv`
