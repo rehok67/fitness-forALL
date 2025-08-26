@@ -9,7 +9,7 @@ Bu proje aşağıdaki temel bileşenlerden oluşmaktadır:
 - **Veri Analizi**: Jupyter Notebook kullanarak detaylı veri analizi ve görselleştirme
 - **Veritabanı Entegrasyonu**: Temizlenmiş verilerin PostgreSQL'e aktarılması
 - **Full-Stack Uygulama**: Spring Boot backend ve Angular frontend
-
+- **Yapay Zeka ile Uygun Veri Üretimi Süreci**: LLM deployu ve yenilikler
 ## 🗂️ Proje Yapısı
 
 ```
@@ -58,6 +58,8 @@ datacleaning/
 └── ⚙️ Yapılandırma Dosyaları
     ├── .gitignore                       # Git ignore kuralları
     └── requirements.txt                 # Python bağımlılıkları
+└── ⚙️ Yapay Zeka ile Veri Üretimi
+    ├── llm entegrasyonu ve veri üretimi.ipynb         # Veri ürettiğimiz colab dosyası
 ```
 
 ## 🚀 Kurulum ve Başlangıç
@@ -190,76 +192,6 @@ python pandas_temizleme.py
 python query_db.py
 ```
 
-### Web Uygulaması
-
-1. Backend sunucusunu başlatın (port: 8080)
-2. Frontend sunucusunu başlatın (port: 4200)
-3. Tarayıcıda `http://localhost:4200` adresine gidin
-
-## 📊 Veri Seti Bilgileri
-
-### Ana Sütunlar
-
-| Sütun | Tip | Açıklama |
-|-------|-----|----------|
-| `title` | String | Program başlığı |
-| `description` | Text | Program açıklaması |
-| `level` | Array[String] | Zorluk seviyeleri |
-| `goal` | Array[String] | Program hedefleri |
-| `equipment` | String | Gerekli ekipman |
-| `program_length` | Float | Program süresi (hafta) |
-| `time_per_workout` | Float | Antrenman süresi (dakika) |
-| `total_exercises` | Integer | Toplam egzersiz sayısı |
-| `created` | Timestamp | Oluşturulma tarihi |
-| `last_edit` | Timestamp | Son düzenleme tarihi |
-
-### İstatistiksel Özetler
-
-- **Ortalama Program Süresi**: 8.81 hafta
-- **Ortalama Antrenman Süresi**: 69.04 dakika
-- **Ortalama Egzersiz Sayısı**: 232.88
-- **En Popüler Ekipman**: Full Gym
-
-## 🛡️ Güvenlik
-
-Proje güvenlik özellikleri için [`SECURITY-README.md`](SECURITY-README.md) dosyasını inceleyin.
-
-## 📧 Email Yapılandırması
-
-Gmail entegrasyonu için [`GMAIL_SETUP_INSTRUCTIONS.md`](GMAIL_SETUP_INSTRUCTIONS.md) dosyasındaki adımları takip edin.
-
-## 🤝 Katkıda Bulunma
-
-1. Repository'yi fork edin
-2. Feature branch oluşturun (`git checkout -b feature/AmazingFeature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add some AmazingFeature'`)
-4. Branch'inizi push edin (`git push origin feature/AmazingFeature`)
-5. Pull Request oluşturun
-
-## 📝 Lisans
-
-Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
-
-## 📞 İletişim
-
-Proje ile ilgili sorularınız için:
-- GitHub Issues kullanabilirsiniz
-- Email: [your-email@example.com]
-
-## 🙏 Teşekkürler
-
-Bu proje aşağıdaki açık kaynak teknolojileri kullanmaktadır:
-- **Python**: Veri analizi ve işleme
-- **Pandas**: Veri manipülasyonu
-- **PostgreSQL**: Veritabanı yönetimi
-- **Spring Boot**: Backend framework
-- **Angular**: Frontend framework
-- **Jupyter**: Etkileşimli veri analizi
-
----
-
-⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın! 
-
 ## 🧠 Yapay Zekâ ile Veri Üretimi Süreci
 
 Bu proje kapsamında, hazır veri setinden yeni içerikler üretmek amacıyla bir LLM (Large Language Model) entegrasyonu gerçekleştirildi. Sürecin tüm akışı `llm entegrasyonu ve veri üretimi.ipynb` notebook'u içinde bulunmaktadır.
@@ -313,3 +245,56 @@ pip install transformers accelerate sentencepiece
 - Notebook: `llm entegrasyonu ve veri üretimi.ipynb`
 - Girdi veri seti: `program_summary_processed.csv`
 - Üretilen çıktı: `parcali_programs.csv`
+
+### Web Uygulaması
+
+1. Backend sunucusunu başlatın (port: 8080)
+2. Frontend sunucusunu başlatın (port: 4200)
+3. Tarayıcıda `http://localhost:4200` adresine gidin
+
+## 📊 Veri Seti Bilgileri
+
+### Ana Sütunlar
+
+| Sütun | Tip | Açıklama |
+|-------|-----|----------|
+| `title` | String | Program başlığı |
+| `description` | Text | Program açıklaması |
+| `level` | Array[String] | Zorluk seviyeleri |
+| `goal` | Array[String] | Program hedefleri |
+| `equipment` | String | Gerekli ekipman |
+| `program_length` | Float | Program süresi (hafta) |
+| `time_per_workout` | Float | Antrenman süresi (dakika) |
+| `total_exercises` | Integer | Toplam egzersiz sayısı |
+| `created` | Timestamp | Oluşturulma tarihi |
+| `last_edit` | Timestamp | Son düzenleme tarihi |
+
+### İstatistiksel Özetler
+
+- **Ortalama Program Süresi**: 8.81 hafta
+- **Ortalama Antrenman Süresi**: 69.04 dakika
+- **Ortalama Egzersiz Sayısı**: 232.88
+- **En Popüler Ekipman**: Full Gym
+
+## 🛡️ Güvenlik
+
+Proje güvenlik özellikleri için [`SECURITY-README.md`](SECURITY-README.md) dosyasını inceleyin.
+
+## 📧 Email Yapılandırması
+
+Gmail entegrasyonu için [`GMAIL_SETUP_INSTRUCTIONS.md`](GMAIL_SETUP_INSTRUCTIONS.md) dosyasındaki adımları takip edin.
+
+
+
+## 🙏 Teşekkürler
+
+Bu proje aşağıdaki açık kaynak teknolojileri kullanmaktadır:
+- **Python**: Veri analizi ve işleme
+- **Pandas**: Veri manipülasyonu
+- **PostgreSQL**: Veritabanı yönetimi
+- **Spring Boot**: Backend framework
+- **Angular**: Frontend framework
+- **Jupyter**: Etkileşimli veri analizi
+
+---
+
